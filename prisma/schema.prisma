@@ -1,0 +1,65 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int     @id @unique @default(autoincrement())
+  email    String  @unique
+  name     String
+  password String
+  age      Int
+  role     String
+  order    Order[]
+}
+
+model Order {
+  id           Int            @unique @default(autoincrement())
+  amount       Int
+  description  String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  isDelivered  Boolean
+  createdBy    Int
+  updatedBy    Int?
+  orderBy      String
+  orderByUser  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  orderProduct OrderProduct[]
+  discount     Int           @default(0)
+  coupon       Coupon?        @relation(fields: [couponId], references: [id])
+  couponId     Int?
+}
+
+model OrderProduct {
+  id        Int      @id @unique @default(autoincrement())
+  orderId   Int
+  productId Int
+  qty       Int
+  order     Order    @relation(fields: [orderId], references: [id] , onDelete: Cascade)
+  product   Products @relation(fields: [productId], references: [id],onDelete: Cascade)
+}
+
+model Products {
+  id           Int            @id @unique @default(autoincrement())
+  productName  String         @unique
+  stock        Int
+  price        Int
+  orderProduct OrderProduct[]
+}
+
+model Coupon {
+  id           Int      @id @unique @default(autoincrement())
+  code         String   @unique
+  amountRange  Int
+  value        Int
+  isPercentage Boolean
+  expDate      DateTime
+  order        Order[]
+  applyCount   Int      @default(0)
+}
